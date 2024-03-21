@@ -979,7 +979,7 @@
   resolved "https://registry.yarnpkg.com/@vinejs/compiler/-/compiler-2.4.1.tgz#dbde3d81edaad68e18099c5925bad821835c4092"
   integrity sha512-WZqCZEQBvuPEghAxnpvNLclyyfqkmU+2V2K4zoZhOUJRD9KRJ+hCNQQ6LSzt7ZwSh+wwxq0r9FpAfeC3tswB8Q==
 
-"@vinejs/vine@^1.7.1":
+"@vinejs/vine@^1.8.0":
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@vinejs/vine/-/vine-1.8.0.tgz#789b837c5a2f94e67127087f2edf8df6c6541b4f"
   integrity sha512-Qq3XxbA26jzqS9ICifkqzT399lMQZ2fWtqeV3luI2as+UIK7qDifJFU2Q4W3q3IB5VXoWxgwAZSZEO0em9I/qQ==
