@@ -600,6 +600,11 @@
   resolved "https://registry.yarnpkg.com/@poppinss/macroable/-/macroable-1.0.1.tgz#288c8f93d15bdae3634e82f8581932f45e34d86d"
   integrity sha512-bO3+rnqGhE+gdx4DOyYjY9jCm2+c5Ncyl2Gmst0w271rIFnsB00btonpdmAqvFNzS8rcas+APGm+47fYMmkpQA==
 
+"@poppinss/macroable@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@poppinss/macroable/-/macroable-1.0.2.tgz#bdf2fb8648334410a1a53173e5b2d1995d3848af"
+  integrity sha512-xhhEcEvhQC8mP5oOr5hbE4CmUgmw/IPV1jhpGg2xSkzoFrt9i8YVqBQt9744EFesi5F7pBheWozg63RUBM/5JA==
+
 "@poppinss/matchit@^3.1.2":
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@poppinss/matchit/-/matchit-3.1.2.tgz#674a477f6cc58f760b16b52d20673f886615cc43"
@@ -974,21 +979,21 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@vinejs/compiler@^2.4.1":
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/@vinejs/compiler/-/compiler-2.4.1.tgz#dbde3d81edaad68e18099c5925bad821835c4092"
-  integrity sha512-WZqCZEQBvuPEghAxnpvNLclyyfqkmU+2V2K4zoZhOUJRD9KRJ+hCNQQ6LSzt7ZwSh+wwxq0r9FpAfeC3tswB8Q==
+"@vinejs/compiler@^2.5.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@vinejs/compiler/-/compiler-2.5.0.tgz#a4297687cd1c61fd14de35f452045a324e5bd084"
+  integrity sha512-hg4ekaB5Y2zh+IWzBiC/WCDWrIfpVnKu/ubUvelKlidc/VbulsexoFRw5kJGHZenPVI5YzNnDeTdYSALkTV7jQ==
 
-"@vinejs/vine@^1.8.0":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@vinejs/vine/-/vine-1.8.0.tgz#789b837c5a2f94e67127087f2edf8df6c6541b4f"
-  integrity sha512-Qq3XxbA26jzqS9ICifkqzT399lMQZ2fWtqeV3luI2as+UIK7qDifJFU2Q4W3q3IB5VXoWxgwAZSZEO0em9I/qQ==
+"@vinejs/vine@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@vinejs/vine/-/vine-2.1.0.tgz#2ab0c1f93edb130e1913415a3e364f5118e21f7e"
+  integrity sha512-09aJ2OauxpblqiNqd8qC9RAzzm5SV6fTqZhE4e25j4cM7fmNoXRTjM7Oo8llFADMO4eSA44HqYEO3mkRRYdbYw==
   dependencies:
-    "@poppinss/macroable" "^1.0.1"
+    "@poppinss/macroable" "^1.0.2"
     "@types/validator" "^13.11.9"
-    "@vinejs/compiler" "^2.4.1"
+    "@vinejs/compiler" "^2.5.0"
     camelcase "^8.0.0"
-    dayjs "^1.11.10"
+    dayjs "^1.11.11"
     dlv "^1.1.3"
     normalize-url "^8.0.1"
     validator "^13.11.0"
@@ -1565,10 +1570,10 @@ dateformat@^4.6.3:
   resolved "https://registry.yarnpkg.com/dateformat/-/dateformat-4.6.3.tgz#556fa6497e5217fedb78821424f8a1c22fa3f4b5"
   integrity sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA==
 
-dayjs@^1.11.10:
-  version "1.11.10"
-  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.10.tgz#68acea85317a6e164457d6d6947564029a6a16a0"
-  integrity sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==
+dayjs@^1.11.11:
+  version "1.11.11"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.11.tgz#dfe0e9d54c5f8b68ccf8ca5f72ac603e7e5ed59e"
+  integrity sha512-okzr3f11N6WuqYtZSvm+F776mB41wRZMhKP+hc34YdW+KmtYYK9iqvHSwo2k9FEH3fhGXvOPV6yz2IcSrfRUDg==
 
 debug@4.3.4, debug@^4.3.1, debug@^4.3.2, debug@^4.3.4:
   version "4.3.4"
