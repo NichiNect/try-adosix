@@ -1,28 +1,147 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import db from '@adonisjs/lucid/services/db'
+import {{ modelName }} from '#models/{{ modelNameLowerCase }}'
+import { create{{ moduleName }}Validator, update{{ moduleName }}Validator } from '#validators/{{ validatorNamespace }}'
 
 export default class {{ controllerName }} {
     /**
     * Display a list of resource
     */
-    async index({}: HttpContext) {}
+    public async index({ request, response }: HttpContext) {
+        
+        const search: string = request.input('search') || ''
+        const page: number = request.input('page') || 1
+        const limit: number = request.input('limit') || 10
+        const orderDirection: 'asc' | 'desc' = request.input('orderDirection') || 'desc'
+
+        const searchableColumn = [
+            `{{ modelNamePluralLowerCase }}.name`
+        ]
+
+        // * Find Data
+        const data = await {{ modelName }}.query()
+            .if(search != '', (query: any) => {
+                return query.where((searchWhere: any) => {
+
+                    for (const item of searchableColumn) {
+                        searchWhere.orWhere(item, 'LIKE', `%${search}%`)
+                    }
+                })
+            })
+            .orderBy('created_at', orderDirection)
+            .paginate(page, limit)
+
+        // * Response
+        return response.send({
+            message: 'Success',
+            data
+        })
+    }
 
     /**
     * Handle form submission for the create action
     */
-    async store({ request }: HttpContext) {}
+    public async store({ request, response }: HttpContext) {
+
+        // * Validate Request
+        const validatedData = await request.validateUsing(create{{ moduleName }}Validator)
+
+        // * Process to DB
+        const created = await Product.create(validatedData)
+
+        // * Response
+        return response.send({
+            message: 'Success',
+            data: created
+        })
+    }
 
     /**
     * Show individual record
     */
-    async show({ params }: HttpContext) {}
+    public async show({ params, response }: HttpContext) {
+
+        // * Find Data
+        const data = await {{ modelName }}.find(params.id)
+
+        if (!data) {
+            return response.abort({
+                message: 'Data not found'
+            }, 404)
+        }
+
+        // * Response
+        return response.send({
+            message: 'Success',
+            data
+        })
+    }
 
     /**
     * Handle form submission for the edit action
     */
-    async update({ params, request }: HttpContext) {}
+    async update({ params, request, response }: HttpContext) {
+
+        // * Validate Request
+        const validatedData = await request.validateUsing(update{{ moduleName }}Validator)
+
+        const trx = await db.transaction()
+
+        // * Find Data
+        const data = await {{ modelName }}.find(params.id, { client: trx })
+
+        if (!data) {
+            return response.abort({
+                message: 'Data not found'
+            }, 404)
+        }
+
+        // * Assign Data
+        data.merge(validatedData)
+
+        // * Process to DB
+        data.useTransaction(trx)
+        await data.save()
+            .catch( async (err: any) => {
+                await trx.rollback()
+                return response.abort({
+                    message: 'Error: failed to insert data'
+                }, 500)
+            })
+
+        await trx.commit()
+
+        // * Response
+        return response.send({
+            message: 'Success',
+            data: data
+        })
+    }
 
     /**
     * Delete record
     */
-    async destroy({ params }: HttpContext) {}
+    async destroy({ params, response }: HttpContext) {
+
+        const trx = await db.transaction()
+
+        // * Find Data
+        const data = await {{ modelName }}.find(params.id)
+
+        if (!data) {
+            return response.abort({
+                message: 'Data not found'
+            }, 404)
+        }
+
+        // * Process to DB
+        data.useTransaction(trx)
+        await data.delete()
+
+        // * Response
+        return response.send({
+            message: 'Success',
+            data
+        })
+    }
 }

@@ -1,0 +1,40 @@
+public async store({ request, response }: HttpContext) {
+
+    // * Validate Request
+    const validatedData = await request.validateUsing(create{{ moduleName }}Validator)
+
+    const columns = {{ modelName }}.columnDefinitions()
+    const model = new {{ modelName }}()
+
+    const trx = await db.transaction()
+
+    const fieldIsFile: string[] = [];
+
+    for (const field of columns) {
+        
+        if (validatedData[field] && validatedData[field] !== null) {
+
+            if (fieldIsFile.includes(field)) {
+                // ? Next Improvement
+            } else {
+                model[field] = validatedData[field]
+            }
+        }
+    }
+
+    // * Process to DB
+    model.useTransaction(trx)
+    await model.save()
+        .catch((err: any) => {
+            trx.rollback()
+            return response.abort({
+                message: 'Error: failed to insert data'
+            }, 500)
+        })
+
+    // * Response
+    return response.send({
+        message: 'Success',
+        data: model
+    })
+}
