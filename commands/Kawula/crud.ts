@@ -26,6 +26,33 @@ export default class Crud extends BaseCommand {
    */
   protected controllerStubPath: string = 'stubs/controller.stub'
 
+  async interact() {
+
+    if (this.model) {
+
+      const modelPath = path.join(this.app.modelsPath(), `${this.model?.toLowerCase()}.ts`)
+  
+      if (!fs.existsSync(modelPath)) {
+  
+        this.logger.warning(`The model ${this.model} is not exist yet.`)
+        const wantCreateModel = await this.prompt.confirm('Do you want to create model first?')
+  
+        if (wantCreateModel) {
+
+          const modelName = await this.prompt.ask('Enter the model name: ', {
+            validate(value) {
+              return value.length > 1
+            }
+          })
+
+          this.model = modelName?.toLowerCase()
+  
+          await this.generateModel(modelName?.toLowerCase())
+        }
+      }
+    }
+  }
+
   async run() {
 
     const namespace = this.controllerName.split('/');
@@ -126,6 +153,15 @@ export default class Crud extends BaseCommand {
     ])
 
     this.logger.success(`Validator class created: ${validatorPath}`)
+  }
+
+  private async generateModel(modelName: string) {
+
+    await ace.exec('make:model', [
+      `${modelName}`,
+    ])
+
+    this.logger.success(`Model created: ${modelName}`)
   }
 
   private async getStub(path: string) {
