@@ -1,7 +1,9 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
 import {{ modelName }} from '#models/{{ modelNameLowerCase }}'
 import { create{{ moduleName }}Validator, update{{ moduleName }}Validator } from '#validators/{{ validatorNamespace }}'
+import fs from 'node:fs'
 
 export default class {{ controllerName }} {
     /**
@@ -46,8 +48,27 @@ export default class {{ controllerName }} {
         // * Validate Request
         const validatedData = await request.validateUsing(create{{ moduleName }}Validator)
 
+        const fieldIsFile: string[] = []
+        const fieldUploaded: any = {}
+
+        for (const fieldFile of fieldIsFile) {
+
+            const file = request.file(fieldFile)
+
+            // * Write uploaded file to storage
+            let fileName: string = ''
+            if (file) {
+
+                fileName = `${Date.now()}-${file.clientName}`
+                await file.move(app.makePath('uploads/{{ modelNamePluralLowerCase }}'), {
+                    name: fileName
+                })
+                fieldUploaded[fieldFile] = (fileName != '') ? `uploads/{{ modelNamePluralLowerCase }}/${fileName}` : ''
+            }
+        }
+
         // * Process to DB
-        const created = await Product.create(validatedData)
+        const created = await Product.create({ ...validatedData, ...fieldUploaded })
 
         // * Response
         return response.send({
@@ -96,13 +117,44 @@ export default class {{ controllerName }} {
             }, 404)
         }
 
+        // * File Handler
+        const fieldIsFile: string[] = ['picture']
+        const fieldUploaded: any = {}
+
+        for (const fieldFile of fieldIsFile) {
+
+            const file = request.file(fieldFile)
+
+            // * Write uploaded file to storage
+            let fileName: string = ''
+            if (file) {
+
+                // * Delete old file
+                // @ts-ignore
+                if (data[fieldFile] && data[fieldFile] != '') {
+                    // @ts-ignore
+                    fs.unlink(data[fieldFile], (err: any) => {
+                        console.error('Error: failed to delete old file')
+                        console.error(err)
+                    })
+                }
+
+                fileName = `${Date.now()}-${file.clientName}`
+                await file.move(app.makePath('uploads/{{ modelNamePluralLowerCase }}'), {
+                    name: fileName
+                })
+                fieldUploaded[fieldFile] = (fileName != '') ? `uploads/{{ modelNamePluralLowerCase }}/${fileName}` : ''
+            }
+        }
+
         // * Assign Data
-        data.merge(validatedData)
+        data.merge({ ...validatedData, ...fieldUploaded})
 
         // * Process to DB
         data.useTransaction(trx)
         await data.save()
             .catch( async (err: any) => {
+                console.error(err)
                 await trx.rollback()
                 return response.abort({
                     message: 'Error: failed to insert data'
