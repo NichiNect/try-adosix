@@ -50,6 +50,33 @@ export default class Crud extends BaseCommand {
           await this.generateModel(modelName?.toLowerCase())
         }
       }
+    } else {
+
+      const wantToUseModel = await this.prompt.confirm('Do you want to use lucid model?')
+
+      if (wantToUseModel) {
+
+        const modelName = await this.prompt.ask('Enter the model name: ', {
+          validate(value) {
+            return value.length > 1
+          }
+        })
+
+        this.model = modelName?.toLowerCase()
+
+        const modelPath = path.join(this.app.modelsPath(), `${this.model?.toLowerCase()}.ts`)
+  
+        if (!fs.existsSync(modelPath)) {
+          const wantCreateNewModal = await this.prompt.confirm(`The model '${this.model} is not exists yet. Want to create that model first?`)
+
+          if (wantCreateNewModal) {
+            await this.generateModel(modelName?.toLowerCase())
+          }
+        }
+      } else {
+
+        this.controllerStubPath = 'stubs/controller-with-query-builder.stub'
+      }
     }
   }
 
@@ -60,6 +87,10 @@ export default class Crud extends BaseCommand {
     const className = namespace[namespace.length - 1];
     const moduleName = className.replace(/Controller/g, '')
     namespace.pop();
+    
+    if (this.controllerStubPath == 'stubs/controller-with-query-builder.stub') {
+      this.model = moduleName
+    }
 
     const controllerTemplate = [
       {

@@ -1,11 +1,17 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
-import {{ modelName }} from '#models/{{ modelNameLowerCase }}'
 import { create{{ moduleName }}Validator, update{{ moduleName }}Validator } from '#validators/{{ validatorNamespace }}'
 import fs from 'node:fs'
+import { DateTime } from 'luxon'
 
 export default class {{ controllerName }} {
+
+    /**
+     * List of field is file
+     */
+    protected fieldIsFile: string[] = []
+
     /**
     * Display a list of resource
     */
@@ -16,12 +22,11 @@ export default class {{ controllerName }} {
         const limit: number = request.input('limit') || 10
         const orderDirection: 'asc' | 'desc' = request.input('orderDirection') || 'desc'
 
-        const searchableColumn = [
-            `{{ modelNamePluralLowerCase }}.name`
+        const searchableColumn: string[] = [
         ]
 
         // * Find Data
-        const data = await {{ modelName }}.query()
+        const data = await db.from('{{ modelNamePluralLowerCase }}')
             .if(search != '', (query: any) => {
                 return query.where((searchWhere: any) => {
 
@@ -48,27 +53,35 @@ export default class {{ controllerName }} {
         // * Validate Request
         const validatedData = await request.validateUsing(create{{ moduleName }}Validator)
 
-        const fieldIsFile: string[] = []
+        // * File Handler
         const fieldUploaded: any = {}
+        if (this.fieldIsFile?.length > 0) {
 
-        for (const fieldFile of fieldIsFile) {
+            for (const fieldFile of this.fieldIsFile) {
 
-            const file = request.file(fieldFile)
+                const file = request.file(fieldFile)
 
-            // * Write uploaded file to storage
-            let fileName: string = ''
-            if (file) {
+                // * Write uploaded file to storage
+                let fileName: string = ''
+                if (file) {
 
-                fileName = `${Date.now()}-${file.clientName}`
-                await file.move(app.makePath('uploads/{{ modelNamePluralLowerCase }}'), {
-                    name: fileName
-                })
-                fieldUploaded[fieldFile] = (fileName != '') ? `uploads/{{ modelNamePluralLowerCase }}/${fileName}` : ''
+                    fileName = `${Date.now()}-${file.clientName}`
+                    await file.move(app.makePath('uploads/{{ modelNamePluralLowerCase }}'), {
+                        name: fileName
+                    })
+                    fieldUploaded[fieldFile] = (fileName != '') ? `uploads/{{ modelNamePluralLowerCase }}/${fileName}` : ''
+                }
             }
         }
 
         // * Process to DB
-        const created = await {{ modelName }}.create({ ...validatedData, ...fieldUploaded })
+        const created = await db.table('{{ modelNamePluralLowerCase }}')
+            .insert({
+                ...validatedData,
+                ...fieldUploaded,
+                created_at: DateTime.now(),
+                updated_at: DateTime.now(),
+            })
 
         // * Response
         return response.send({
@@ -83,7 +96,9 @@ export default class {{ controllerName }} {
     public async show({ params, response }: HttpContext) {
 
         // * Find Data
-        const data = await {{ modelName }}.find(params.id)
+        const data = await db.from('{{ modelNamePluralLowerCase }}')
+            .where('id', params.id)
+            .first()
 
         if (!data) {
             return response.abort({
@@ -109,7 +124,10 @@ export default class {{ controllerName }} {
         const trx = await db.transaction()
 
         // * Find Data
-        const data = await {{ modelName }}.find(params.id, { client: trx })
+        const data = await trx.from('{{ modelNamePluralLowerCase }}')
+            .where('id', params.id)
+            .forUpdate()
+            .first()
 
         if (!data) {
             return response.abort({
@@ -118,40 +136,42 @@ export default class {{ controllerName }} {
         }
 
         // * File Handler
-        const fieldIsFile: string[] = ['picture']
         const fieldUploaded: any = {}
+        if (this.fieldIsFile?.length > 0) {
 
-        for (const fieldFile of fieldIsFile) {
+            for (const fieldFile of fieldIsFile) {
 
-            const file = request.file(fieldFile)
+                const file = request.file(fieldFile)
 
-            // * Write uploaded file to storage
-            let fileName: string = ''
-            if (file) {
+                // * Write uploaded file to storage
+                let fileName: string = ''
+                if (file) {
 
-                // * Delete old file
-                if (data[fieldFile as keyof {{ modelName }}]) {
+                    // * Delete old file
+                    if (data[fieldFile]) {
 
-                    fs.unlink(data[fieldFile as keyof {{ modelName }}] as unknown as string, (err: any) => {
-                        console.error('Error: failed to delete old file')
-                        console.error(err)
+                        fs.unlink(data[fieldFile] as unknown as string, (err: any) => {
+                            console.error('Error: failed to delete old file')
+                            console.error(err)
+                        })
+                    }
+
+                    fileName = `${Date.now()}-${file.clientName}`
+                    await file.move(app.makePath('uploads/{{ modelNamePluralLowerCase }}'), {
+                        name: fileName
                     })
+                    fieldUploaded[fieldFile] = (fileName != '') ? `uploads/{{ modelNamePluralLowerCase }}/${fileName}` : ''
                 }
-
-                fileName = `${Date.now()}-${file.clientName}`
-                await file.move(app.makePath('uploads/{{ modelNamePluralLowerCase }}'), {
-                    name: fileName
-                })
-                fieldUploaded[fieldFile] = (fileName != '') ? `uploads/{{ modelNamePluralLowerCase }}/${fileName}` : ''
             }
         }
 
-        // * Assign Data
-        data.merge({ ...validatedData, ...fieldUploaded})
-
         // * Process to DB
-        data.useTransaction(trx)
-        await data.save()
+        await trx.from('{{ modelNamePluralLowerCase }}')
+            .update({
+                ...validatedData,
+                ...fieldUploaded,
+                updated_at: DateTime.now()
+            }, ['id'])
             .catch( async (err: any) => {
                 console.error(err)
                 await trx.rollback()
@@ -177,7 +197,9 @@ export default class {{ controllerName }} {
         const trx = await db.transaction()
 
         // * Find Data
-        const data = await {{ modelName }}.find(params.id)
+        const data = await trx.from('{{ modelNamePluralLowerCase }}')  
+            .where('id', params.id)
+            .first()
 
         if (!data) {
             return response.abort({
@@ -185,9 +207,33 @@ export default class {{ controllerName }} {
             }, 404)
         }
 
+        // * Remove file if exists
+        if (this.fieldIsFile?.length > 0) {
+
+            for (const fieldFile of this.fieldIsFile) {
+
+                if (data[fieldFile]) {
+                    fs.unlink(data[fieldFile] as unknown as string, (err: any) => {
+                        console.error('Error: failed to delete file')
+                        console.error(err)
+                    })
+                }
+            }
+        }
+
         // * Process to DB
-        data.useTransaction(trx)
-        await data.delete()
+        await trx.from('{{ modelNamePluralLowerCase }}')
+            .where('id', data.id)
+            .delete()
+            .catch( async (err: any) => {
+                console.error(err)
+                await trx.rollback()
+                return response.abort({
+                    message: 'Error: failed to delete data'
+                }, 500)
+            })
+
+        await trx.commit()
 
         // * Response
         return response.send({
